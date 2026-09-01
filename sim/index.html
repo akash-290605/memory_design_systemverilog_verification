@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Synchronous 1 KB Memory Virtual Simulator (256 x 32-bit, 8-bit ADDR)</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- Header Bar -->
+    <header class="app-header">
+        <div class="brand-section">
+            <div class="brand-icon">⚡</div>
+            <div>
+                <div class="brand-title">SYNCHRONOUS 1 KB MEMORY SIMULATOR</div>
+                <div class="brand-subtitle">Hardware Architecture Simulation Workbench</div>
+            </div>
+        </div>
+
+        <div class="header-specs">
+            <div class="spec-pill">DEPTH: <strong>256 Words</strong></div>
+            <div class="spec-pill">WIDTH: <strong>32-bit</strong></div>
+            <div class="spec-pill">ADDR: <strong>8-bit</strong></div>
+            <div class="spec-pill">TOTAL: <strong>1024 Bytes (1 KB)</strong></div>
+            <div class="spec-pill">PORT: <strong>Single-Port Sync</strong></div>
+        </div>
+
+        <div class="header-actions">
+            <button class="btn-secondary btn-sm" id="btn-toggle-audio" title="Toggle audio sound effects">
+                🔊 Audio ON
+            </button>
+            <button class="btn-primary btn-sm" id="btn-run-test-suite" title="Run automated regression tests 1–6">
+                ▶ Run Verification Tests
+            </button>
+            <button class="btn-secondary btn-sm" id="btn-reset-sim" title="Reset simulator to cycle 0">
+                🔄 Reset Sim
+            </button>
+        </div>
+    </header>
+
+    <!-- Operation Status Banner -->
+    <div id="disp-op-banner" class="op-banner">
+        Simulator Initialized: 256 words x 32-bit single-port synchronous memory ready (ADDR_WIDTH=8).
+    </div>
+
+    <!-- Main Grid Layout (Left: Inputs, Center: Schematic, Right: Outputs & Verilog) -->
+    <main class="main-grid">
+
+        <!-- ================= LEFT COLUMN: INPUT CONTROLS ================= -->
+        <section class="col-left card">
+            <div class="card-header">
+                <span class="card-title">🎮 Input & Control Panel</span>
+                <span class="badge badge-cyan">INPUT PORTS</span>
+            </div>
+
+            <div class="card-body">
+                <!-- Clock Domain Controls -->
+                <div class="control-group">
+                    <div class="group-title">
+                        <span>Clock (CLK) Domain</span>
+                        <span id="clk-state-badge" class="badge badge-slate">LOW (0)</span>
+                    </div>
+                    
+                    <button class="btn-clock-step" id="btn-rising-edge" title="Shortcut: Spacebar">
+                        <span>⚡ Step Rising Edge (posedge)</span>
+                    </button>
+
+                    <div class="field-row" style="margin-top: 8px;">
+                        <button class="btn-auto-clock" id="btn-auto-clock" style="flex: 1;">
+                            <span id="auto-clock-icon">▶</span>
+                            <span id="auto-clock-text">Auto Clock (Run)</span>
+                        </button>
+                        <button class="btn-secondary" id="btn-clk-toggle" title="Toggle half-cycle clock state (0/1)">
+                            Toggle CLK
+                        </button>
+                    </div>
+
+                    <!-- Clock Speed Slider with Header Badge -->
+                    <div style="margin-top: 10px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                            <span class="field-label" style="margin: 0;">Clock Speed:</span>
+                            <span id="speed-val" class="code-font text-cyan text-xs bold" style="background: rgba(0, 242, 254, 0.12); padding: 2px 8px; border-radius: 4px; border: 1px solid rgba(0, 242, 254, 0.3); white-space: nowrap;">0.5 Hz (2.0s)</span>
+                        </div>
+                        <input type="range" id="speed-slider" min="0.1" max="4.0" step="0.1" value="0.5" style="width: 100%; display: block; accent-color: var(--neon-cyan);">
+                    </div>
+
+                    <!-- Speed Preset Quick-Buttons -->
+                    <div class="preset-grid" style="grid-template-columns: repeat(4, 1fr); margin-top: 8px;">
+                        <button class="btn-preset-data btn-speed-preset" data-speed="0.2" title="Ultra slow: 5s per cycle">🐢 0.2Hz</button>
+                        <button class="btn-preset-data btn-speed-preset active" data-speed="0.5" title="Slow motion: 2s per cycle">⏱️ 0.5Hz</button>
+                        <button class="btn-preset-data btn-speed-preset" data-speed="1.0" title="Normal: 1s per cycle">🚶 1.0Hz</button>
+                        <button class="btn-preset-data btn-speed-preset" data-speed="2.5" title="Fast: 400ms per cycle">⚡ 2.5Hz</button>
+                    </div>
+
+                    <div class="field-row" style="margin-top: 6px;">
+                        <span class="field-label">Cycle:</span>
+                        <span class="code-font bold text-green" id="cycle-display">0</span>
+                        <span class="text-xs text-muted" style="margin-left: auto;">[Space = Step, P = Auto]</span>
+                    </div>
+                </div>
+
+                <!-- Reset (RST) Control -->
+                <div class="control-group">
+                    <div class="group-title">
+                        <span>Synchronous Reset (RST)</span>
+                        <span class="badge badge-red">PRIORITY 1</span>
+                    </div>
+                    <div class="field-row">
+                        <div class="toggle-switch-wrapper">
+                            <label class="switch switch-rst">
+                                <input type="checkbox" id="sw-rst">
+                                <span class="slider-toggle"></span>
+                            </label>
+                            <span class="field-label">RST Level (1 = Clear)</span>
+                        </div>
+                        <button class="btn-secondary btn-sm" id="btn-pulse-rst" title="Apply 1-cycle reset pulse">
+                            Reset Pulse
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Operation Select (WR_RD) & VALID -->
+                <div class="control-group">
+                    <div class="group-title">
+                        <span>Operation Select (WR_RD)</span>
+                        <span id="wr-rd-badge" class="badge badge-cyan">0: READ</span>
+                    </div>
+                    <div class="btn-select-group">
+                        <button id="btn-op-rd" class="active">0: READ</button>
+                        <button id="btn-op-wr">1: WRITE</button>
+                    </div>
+                </div>
+
+                <!-- VALID Port (Input Control) -->
+                <div class="control-group">
+                    <div class="group-title">
+                        <span>Transaction Enable (VALID)</span>
+                        <span id="valid-badge" class="badge badge-slate">VALID = 0 (NOP)</span>
+                    </div>
+                    <div class="field-row">
+                        <div class="toggle-switch-wrapper">
+                            <label class="switch">
+                                <input type="checkbox" id="sw-valid">
+                                <span class="slider-toggle"></span>
+                            </label>
+                            <span class="field-label">VALID (1 = Accept Op, 0 = NOP)</span>
+                        </div>
+                    </div>
+                    <div class="text-xs text-muted" style="margin-top: 4px;">
+                        * Note: VALID is an input signal driven by the master/testbench.
+                    </div>
+                </div>
+
+                <!-- 8-bit Address Input -->
+                <div class="control-group">
+                    <div class="group-title">
+                        <span>Address (ADDR [7:0])</span>
+                        <span class="badge badge-cyan">0 to 255</span>
+                    </div>
+                    
+                    <div class="field-row">
+                        <span class="field-label">Decimal:</span>
+                        <input type="number" id="addr-dec-input" class="input-styled" min="0" max="255" value="0">
+                        <button class="btn-secondary btn-sm" id="btn-addr-dec">-1</button>
+                        <button class="btn-secondary btn-sm" id="btn-addr-inc">+1</button>
+                    </div>
+
+                    <div class="field-row">
+                        <span class="field-label">Hex:</span>
+                        <input type="text" id="addr-hex-input" class="input-styled" value="0x00" maxlength="4">
+                    </div>
+
+                    <div class="field-row">
+                        <span class="field-label">Binary:</span>
+                        <input type="text" id="addr-bin-input" class="input-styled text-xs" value="00000000" maxlength="8">
+                    </div>
+
+                    <div id="addr-error-msg" class="text-red text-xs" style="display: none; margin-top: 4px;"></div>
+                </div>
+
+                <!-- 32-bit WDATA Input -->
+                <div class="control-group">
+                    <div class="group-title">
+                        <span>Write Data (WDATA [31:0])</span>
+                        <button class="btn-secondary btn-sm" id="btn-rand-wdata" title="Generate random 32-bit value">🎲 Random</button>
+                    </div>
+
+                    <div class="field-row">
+                        <span class="field-label">Hex:</span>
+                        <input type="text" id="wdata-hex-input" class="input-styled" value="0x12345678" maxlength="10">
+                    </div>
+
+                    <div class="field-row">
+                        <span class="field-label">Decimal:</span>
+                        <input type="text" id="wdata-dec-input" class="input-styled" value="305419896">
+                    </div>
+
+                    <div class="field-row">
+                        <span class="field-label">Binary:</span>
+                        <input type="text" id="wdata-bin-input" class="input-styled text-xs" value="00010010_00110100_01010110_01111000">
+                    </div>
+
+                    <div class="group-title" style="margin-top: 8px; margin-bottom: 4px;">Presets:</div>
+                    <div class="preset-grid">
+                        <button class="btn-preset-data" data-val="DEADBEEF">0xDEADBEEF</button>
+                        <button class="btn-preset-data" data-val="CAFEBABE">0xCAFEBABE</button>
+                        <button class="btn-preset-data" data-val="12345678">0x12345678</button>
+                        <button class="btn-preset-data" data-val="AAAA5555">0xAAAA5555</button>
+                        <button class="btn-preset-data" data-val="FFFFFFFF">0xFFFFFFFF</button>
+                        <button class="btn-preset-data" data-val="00000000">0x00000000</button>
+                    </div>
+                </div>
+
+                <!-- Predefined Test Scenarios -->
+                <div class="control-group">
+                    <div class="group-title">
+                        <span>Pre-Configured Test Scenarios</span>
+                    </div>
+                    <div class="test-buttons-grid">
+                        <button class="btn-test-action" data-test="1"><span>1️⃣</span> Single Write</button>
+                        <button class="btn-test-action" data-test="2"><span>2️⃣</span> Single Read</button>
+                        <button class="btn-test-action" data-test="3"><span>3️⃣</span> Burst Writes</button>
+                        <button class="btn-test-action" data-test="4"><span>4️⃣</span> Burst Reads</button>
+                        <button class="btn-test-action" data-test="5"><span>5️⃣</span> Reset Sweep</button>
+                        <button class="btn-test-action" data-test="6"><span>6️⃣</span> VALID=0 (NOP)</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= CENTER COLUMN: HARDWARE SCHEMATIC ================= -->
+        <section class="col-center card">
+            <div class="card-header">
+                <span class="card-title">🔬 Memory Block Diagram & Data-Flow Schematic</span>
+                <span class="badge badge-green">LIVE BUS ANIMATION</span>
+            </div>
+            <div class="card-body" style="padding: 0; display: flex; flex-direction: column; flex: 1;">
+                <div class="schematic-canvas-container" id="schematic-container" style="flex: 1; min-height: 590px;">
+                    <canvas id="schematic-canvas"></canvas>
+                </div>
+                <!-- Live Micro-Architecture Status Ribbon -->
+                <div class="schematic-status-ribbon">
+                    <div class="ribbon-item">
+                        <span class="ribbon-label">ADDRESS BUS:</span>
+                        <span class="ribbon-val text-cyan" id="ribbon-addr">MAR: 0x00 (8-bit)</span>
+                    </div>
+                    <div class="ribbon-item">
+                        <span class="ribbon-label">DATA BUS:</span>
+                        <span class="ribbon-val text-green" id="ribbon-data">MDR: 32-bit Bi-directional</span>
+                    </div>
+                    <div class="ribbon-item">
+                        <span class="ribbon-label">CTRL STATE:</span>
+                        <span class="ribbon-val text-amber" id="ribbon-ctrl">READY Handshake Active</span>
+                    </div>
+                    <div class="ribbon-item">
+                        <span class="ribbon-label">CORE MATRIX:</span>
+                        <span class="ribbon-val text-purple" id="ribbon-core">256 Words (1024 Bytes)</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= RIGHT COLUMN: OUTPUTS & HARDWARE STATUS ================= -->
+        <section class="col-right card">
+            <div class="card-header">
+                <span class="card-title">📊 Output Registers & Status</span>
+                <span class="badge badge-cyan">OUTPUT PORTS</span>
+            </div>
+
+            <div class="card-body">
+                <!-- 7-Segment Style Digital Readouts -->
+                <div class="digital-display-card">
+                    <div class="digital-display-row">
+                        <span class="digital-label">RDATA [31:0] (Hex Output):</span>
+                        <span class="badge badge-cyan">32-bit Reg</span>
+                    </div>
+                    <div class="digital-7seg-large" id="disp-rdata-hex">0x00000000</div>
+
+                    <div class="digital-display-row" style="margin-top: 4px;">
+                        <span class="digital-label">Unsigned Dec:</span>
+                        <span class="code-font text-muted" id="disp-rdata-dec">0</span>
+                    </div>
+
+                    <div class="digital-display-row">
+                        <span class="digital-label">ASCII Text:</span>
+                        <span class="code-font text-amber" id="disp-rdata-ascii">"····"</span>
+                    </div>
+
+                    <div class="digital-display-row">
+                        <span class="digital-label">Binary Bits:</span>
+                        <span class="code-font text-xs text-muted" id="disp-rdata-bin">00000000_00000000_00000000_00000000</span>
+                    </div>
+                </div>
+
+                <!-- Ready Status & Status Indicators -->
+                <div class="digital-display-card">
+                    <div class="digital-display-row">
+                        <span class="digital-label">READY (Status Output):</span>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span id="disp-ready-led" class="led-indicator led-off"></span>
+                            <span id="disp-ready-val" class="digital-val text-slate" style="font-size: 18px; font-weight: 900; font-family: var(--font-digital);">0</span>
+                        </div>
+                    </div>
+
+                    <div class="digital-display-row" style="margin-top: 4px;">
+                        <span class="digital-label">Current Address:</span>
+                        <span class="code-font text-cyan bold" id="disp-cur-addr">0x00 (0)</span>
+                    </div>
+
+                    <div class="digital-display-row">
+                        <span class="digital-label">Current Operation:</span>
+                        <span id="disp-cur-op" class="status-badge text-cyan">IDLE</span>
+                    </div>
+                </div>
+
+                <!-- Hardware Architecture Routing Summary -->
+                <div class="control-group" style="background: #091222; border-color: #1e3a5f;">
+                    <div class="group-title">
+                        <span>Architecture Bus Monitor</span>
+                        <span class="badge badge-green">LMC BUSES</span>
+                    </div>
+                    <div class="field-row">
+                        <span class="field-label">Address Bus:</span>
+                        <span class="code-font text-cyan" id="stat-row-dec">MAR: 0x00 (#0)</span>
+                    </div>
+                    <div class="field-row">
+                        <span class="field-label">Data Bus:</span>
+                        <span class="code-font text-green" id="stat-col-dec">MDR: 32-bit Bus Active</span>
+                    </div>
+                    <div class="field-row">
+                        <span class="field-label">Control Bus:</span>
+                        <span class="code-font text-yellow" id="stat-sense-amps">VALID=0 (Idle / Gated)</span>
+                    </div>
+                    <div class="field-row">
+                        <span class="field-label">RAM Mailbox:</span>
+                        <span class="code-font text-muted" id="stat-data-buf">Mailbox #0 Selected</span>
+                    </div>
+                </div>
+
+                <!-- Hardware Timing & Performance Metrics -->
+                <div class="control-group" style="background: #08101d; border-color: #1a2e4c;">
+                    <div class="group-title">
+                        <span>Synchronous Timing Profile</span>
+                        <span class="badge badge-slate">SRAM METRICS</span>
+                    </div>
+                    <div class="field-row">
+                        <span class="field-label">Read Latency:</span>
+                        <span class="code-font text-cyan">1 Clock Cycle (Posedge)</span>
+                    </div>
+                    <div class="field-row">
+                        <span class="field-label">Write Latency:</span>
+                        <span class="code-font text-green">1 Clock Cycle (Posedge)</span>
+                    </div>
+                    <div class="field-row">
+                        <span class="field-label">Reset Behavior:</span>
+                        <span class="code-font text-red">Synchronous (All 256 words cleared)</span>
+                    </div>
+                    <div class="field-row">
+                        <span class="field-label">Handshake Protocol:</span>
+                        <span class="code-font text-yellow">VALID Strobe & READY Pulse</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ================= BOTTOM WORKBENCH: MULTI-TAB INSPECTOR ================= -->
+    <div class="workbench-container">
+        <!-- Tabs Navigation -->
+        <div class="workbench-tabs">
+            <button class="wb-tab active" data-tab="memory">
+                <span>🗄️ Memory Array Inspector (256 Words)</span>
+            </button>
+            <button class="wb-tab" data-tab="waveform">
+                <span>📈 Logic Analyzer Waveform</span>
+            </button>
+            <button class="wb-tab" data-tab="timetravel">
+                <span>⏳ Cycle-by-Cycle Time Machine</span>
+            </button>
+            <button class="wb-tab" data-tab="console">
+                <span>💻 Console & Event Log</span>
+            </button>
+            <button class="wb-tab" data-tab="guide">
+                <span>📖 Hardware Architecture & RTL Guide</span>
+            </button>
+        </div>
+
+        <!-- Tab Panel 1: Memory Array Inspector -->
+        <div class="wb-tab-panel active" id="panel-memory">
+            <div class="heatmap-wrapper">
+                <div class="heatmap-header">
+                    <span>1 KB Memory Address Space Heatmap (0x00 to 0xFF)</span>
+                    <span>Click anywhere on heatmap to navigate address</span>
+                </div>
+                <canvas id="mem-heatmap-canvas"></canvas>
+            </div>
+            <div id="mem-table-container"></div>
+        </div>
+
+        <!-- Tab Panel 2: Logic Waveform Analyzer -->
+        <div class="wb-tab-panel" id="panel-waveform">
+            <div class="waveform-toolbar">
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <span class="code-font bold text-cyan">DIGITAL TRACES:</span>
+                    <span class="text-xs text-muted">CLK, RST, VALID, WR_RD, ADDR [7:0], WDATA [31:0], READY, RDATA [31:0]</span>
+                </div>
+                <div style="display: flex; gap: 6px;">
+                    <button class="btn-secondary btn-sm" id="btn-wave-zoom-in">🔍+ Zoom In</button>
+                    <button class="btn-secondary btn-sm" id="btn-wave-zoom-out">🔍- Zoom Out</button>
+                    <button class="btn-secondary btn-sm" id="btn-wave-vcd">⬇ Export VCD File</button>
+                </div>
+            </div>
+            <div class="waveform-container" id="waveform-container">
+                <canvas id="waveform-canvas"></canvas>
+            </div>
+        </div>
+
+        <!-- Tab Panel 3: Time Travel History -->
+        <div class="wb-tab-panel" id="panel-timetravel">
+            <div class="time-travel-card">
+                <div class="digital-display-row">
+                    <span class="bold text-cyan" style="font-size: 14px;">🕰️ Cycle History Scrubber (Time Travel)</span>
+                    <span id="tt-cycle-val" class="badge badge-green" style="font-size: 12px;">Cycle #0</span>
+                </div>
+                <p class="text-muted text-xs">
+                    Scrub through execution history to examine previous internal states, nonblocking register latches, and memory states at any clock cycle.
+                </p>
+                <div class="tt-controls">
+                    <button class="btn-secondary btn-sm" id="btn-tt-prev">◀ Step Back</button>
+                    <input type="range" class="tt-slider" id="tt-slider" min="0" max="0" value="0">
+                    <button class="btn-secondary btn-sm" id="btn-tt-next">Step Forward ▶</button>
+                    <button class="btn-primary btn-sm" id="btn-tt-live">🔴 Jump to Live</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Panel 4: Console Log -->
+        <div class="wb-tab-panel" id="panel-console">
+            <div class="mem-toolbar">
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <span class="field-label">Filter Log:</span>
+                    <select id="log-filter-select" class="input-styled" style="width: 140px;">
+                        <option value="ALL">All Events</option>
+                        <option value="WRITE">Writes Only</option>
+                        <option value="READ">Reads Only</option>
+                        <option value="RESET">Resets Only</option>
+                        <option value="NOP">NOP / Idle</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 6px;">
+                    <button class="btn-secondary btn-sm" id="btn-export-logs">⬇ Export Log</button>
+                    <button class="btn-secondary btn-sm" id="btn-clear-logs">🗑 Clear Console</button>
+                </div>
+            </div>
+            <div class="console-wrapper">
+                <div class="log-console-list" id="log-console-list"></div>
+            </div>
+        </div>
+
+        <!-- Tab Panel 5: Educational Theory & Guide -->
+        <div class="wb-tab-panel" id="panel-guide">
+            <div class="edu-guide-container">
+                <div class="edu-card">
+                    <h3>💡 How Synchronous Single-Port Memory Works</h3>
+                    <p>
+                        This module models an industry-standard <strong>Synchronous Single-Port Static RAM (SRAM)</strong>:
+                        <br><span class="edu-code-inline">WIDTH = 32-bit | DEPTH = 256 Words | ADDR_WIDTH = 8-bit</span>
+                    </p>
+                    <ul>
+                        <li><strong>Clocked posedge Evaluation:</strong> All internal memory writes and output register updates occur strictly on the positive edge of <span class="edu-code-inline">clk</span>.</li>
+                        <li><strong>Synchronous Active-High Reset:</strong> If <span class="edu-code-inline">rst == 1</span> at the rising clock edge, all 256 memory locations are cleared to zero and outputs are reset (<span class="edu-code-inline">rdata=0, ready=0</span>).</li>
+                        <li><strong>VALID Handshake Protocol:</strong> The <span class="edu-code-inline">valid</span> pin is an <em>input</em> driven by the requester. When <span class="edu-code-inline">valid == 1</span>, the memory accepts the command and asserts <span class="edu-code-inline">ready &lt;= 1</span> on the clock edge.</li>
+                    </ul>
+                </div>
+
+                <div class="edu-card">
+                    <h3>⚡ Verilog Nonblocking (`<=`) Assignment Semantics</h3>
+                    <p>
+                        In digital design, sequential logic uses nonblocking assignments (<span class="edu-code-inline">&lt;=</span>).
+                    </p>
+                    <ul>
+                        <li><strong>Sample-then-Update:</strong> At the rising clock edge, the Right-Hand Side (RHS) of all statements is evaluated simultaneously using values present <em>before</em> the edge, and registers are updated in the nonblocking event queue.</li>
+                        <li><strong>Synchronous Read Latency:</strong> During a read (<span class="edu-code-inline">rdata &lt;= mem[addr]</span>), <span class="edu-code-inline">rdata</span> does NOT change when the address bus changes—it updates strictly after the clocked posedge transition.</li>
+                        <li><strong>Default Register Clear:</strong> Notice lines 20–21 in the Verilog code clear <span class="edu-code-inline">rdata &lt;= 0; ready &lt;= 0;</span> by default. If <span class="edu-code-inline">valid == 0</span>, <span class="edu-code-inline">rdata</span> and <span class="edu-code-inline">ready</span> remain 0.</li>
+                    </ul>
+                </div>
+
+                <div class="edu-card">
+                    <h3>🎯 Timing & Clock Cycle Diagram</h3>
+                    <p>
+                        Cycle sequence for a typical Write followed by Read:
+                    </p>
+                    <ol style="padding-left: 18px; color: #cbd5e1; font-size: 12px; line-height: 1.6;">
+                        <li><strong>Cycle N-1 (Setup):</strong> Master sets <span class="edu-code-inline">ADDR=10, WDATA=0xDEADBEEF, WR_RD=1, VALID=1</span> before clock edge.</li>
+                        <li><strong>Cycle N (posedge CLK):</strong> Memory writes <span class="edu-code-inline">mem[10] &lt;= 0xDEADBEEF</span> and drives <span class="edu-code-inline">ready &lt;= 1</span>.</li>
+                        <li><strong>Cycle N (Setup for Read):</strong> Master sets <span class="edu-code-inline">ADDR=10, WR_RD=0, VALID=1</span>.</li>
+                        <li><strong>Cycle N+1 (posedge CLK):</strong> Memory reads <span class="edu-code-inline">rdata &lt;= mem[10]</span> (<span class="edu-code-inline">0xDEADBEEF</span>) and drives <span class="edu-code-inline">ready &lt;= 1</span>.</li>
+                    </ol>
+                </div>
+
+                <div class="edu-card">
+                    <h3>🏆 VLSI / RTL Interview Q&A</h3>
+                    <ul>
+                        <li><strong>Q: Is this memory synchronous or asynchronous read?</strong><br>
+                        <em>A: Synchronous read. The read operation is inside the <span class="edu-code-inline">always @(posedge clk)</span> block.</em></li>
+                        <li><strong>Q: What happens if `valid` is low during a write?</strong><br>
+                        <em>A: No write occurs, memory retains its previous value, and <span class="edu-code-inline">ready</span> is 0.</em></li>
+                        <li><strong>Q: How many address bits are needed for 256 words?</strong><br>
+                        <em>A: $2^8 = 256$, so 8 bits are required (<span class="edu-code-inline">addr[7:0]</span>).</em></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="sim_engine.js"></script>
+    <script src="schematic_view.js"></script>
+    <script src="waveform_viewer.js"></script>
+    <script src="memory_table.js"></script>
+    <script src="testbench_runner.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
+
