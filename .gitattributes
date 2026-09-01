@@ -1,4 +1,9 @@
-# Exclude HTML/JS reports and tool outputs from language statistics
+# Ignore web report languages entirely from statistics
+*.js linguist-detectable=false
+*.html linguist-detectable=false
+*.css linguist-detectable=false
+
+# Ignore entire report/doc directories
 reports/** linguist-vendored
 docs/** linguist-vendored
 results/** linguist-vendored
