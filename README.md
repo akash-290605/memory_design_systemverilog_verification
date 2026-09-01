@@ -1,3 +1,18 @@
+# 🔍 Why Hardware Verification Matters
+
+In digital VLSI and ASIC/FPGA design cycles, **verification accounts for 70%+ of total project time and effort**. While RTL design defines what the hardware should do, verification rigorously proves that the design functions correctly under all valid conditions and handles edge cases without failure.
+
+---
+
+## 🎯 Key Reasons for Verification
+
+* 💰 **Preventing Multi-Million Dollar Respins:** Unlike software, physical silicon cannot be easily patched post-tapeout. Silicon re-fabrication (mask re-spins) costs millions of dollars and causes severe market entry delays.
+* ⚡ **Corner-Case & Bug Hunting:** Directed testing covers expected flows, but constrained-random verification uncovers complex race conditions, concurrent read/write collisions, out-of-bounds address access, and reset edge behaviors.
+* 🤖 **Automated Self-Checking & Scalability:** Object-Oriented layered testbenches eliminate manual waveform inspections by using scoreboards, reference models, and assertions to automatically catch bugs.
+* 📈 **Measuring Completeness (Coverage Closure):** Code coverage and functional coverage provide quantifiable metrics ensuring that every line, branch, state, and specified feature has been tested thoroughly.
+
+---
+
 # 🏛️ SystemVerilog Layered Verification Architecture
 
 Below is the complete architectural layout of the Object-Oriented SystemVerilog Testbench designed for the synchronous Memory RTL module:
