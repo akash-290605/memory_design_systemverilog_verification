@@ -1,6 +1,6 @@
 # 📈 Simulation Waveform Analysis & Protocol Verification
 
-This document provides a detailed breakdown of the cycle-accurate simulation waveforms captured in **Siemens QuestaSim** for the [memory_design_systemverilog_verification](https://github.com/akash-290605/memory_design_systemverilog_verification) project under the [`results/waveforms`](https://github.com/akash-290605/memory_design_systemverilog_verification/tree/main/results/waveforms) directory.
+This document provides a detailed breakdown of the cycle-accurate simulation waveforms captured in **Siemens QuestaSim** for the [memory_design_systemverilog_verification](https://github.com/akash-290605/memory_design_systemverilog_verification) project.
 
 ---
 
@@ -18,7 +18,7 @@ This document provides a detailed breakdown of the cycle-accurate simulation wav
 Validates that the memory controller synchronously initializes all internal registers and holds the output data bus in a high-impedance or deterministic default state upon active-low reset assertion (`rst_n = 0`).
 
 <p align="center">
-  <img src="results/waveforms/waveform_reset_initialization.png" alt="Reset and Initialization Waveform" width="100%">
+  <img src="./waveform_reset_initialization.png" alt="Reset and Initialization Waveform" width="100%">
 </p>
 
 * 🔄 **Behavior:** When `rst_n` is driven low, read/write enables are masked.
@@ -30,7 +30,7 @@ Validates that the memory controller synchronously initializes all internal regi
 Illustrates single and burst write operations where target memory addresses are populated with randomized data vectors.
 
 <p align="center">
-  <img src="results/waveforms/waveform_write_operation.png" alt="Write Operation Waveform" width="100%">
+  <img src="./waveform_write_operation.png" alt="Write Operation Waveform" width="100%">
 </p>
 
 * ✍️ **Protocol Check:** `addr` and `wdata` are driven synchronously on the positive clock edge when `wr_en` is high.
@@ -42,7 +42,7 @@ Illustrates single and burst write operations where target memory addresses are 
 Demonstrates read transaction execution, highlighting read latency cycles and data validity windows on `rdata`.
 
 <p align="center">
-  <img src="results/waveforms/waveform_read_operation.png" alt="Read Operation Waveform" width="100%">
+  <img src="./waveform_read_operation.png" alt="Read Operation Waveform" width="100%">
 </p>
 
 * 📖 **Latency Check:** Captured `rdata` becomes valid exactly 1 cycle after `rd_en` and `addr` are applied.
@@ -54,7 +54,7 @@ Demonstrates read transaction execution, highlighting read latency cycles and da
 Exhibits continuous alternating write-then-read bursts, boundary address accesses (`0x00`, `0xFF`), and simultaneous operation prevention.
 
 <p align="center">
-  <img src="results/waveforms/waveform_back_to_back_transactions.png" alt="Back-to-Back Transactions Waveform" width="100%">
+  <img src="./waveform_back_to_back_transactions.png" alt="Back-to-Back Transactions Waveform" width="100%">
 </p>
 
 ---
