@@ -22,7 +22,7 @@ This document provides a detailed breakdown of the cycle-accurate simulation wav
 ---
 
 ### 🔹 2. Protocol Assertions Verification
-![Assertions Output](assertions/assertion_nwrite_nread.png)
+![Assertions Output](results/waveforms/assertions/output_immage/assertion_nwrite_nread.png)
 
 - 🛡️ **Assertion Checks:** Demonstrates Concurrent and Immediate SVA (SystemVerilog Assertions) validating handshake integrity and setup/hold timing rules without failures.
 
