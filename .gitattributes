@@ -1,9 +1,11 @@
-# Ignore web report languages entirely from statistics
+# Ignore web/report assets everywhere
 *.js linguist-detectable=false
 *.html linguist-detectable=false
 *.css linguist-detectable=false
+*.do linguist-detectable=false
 
-# Ignore entire report/doc directories
+# Exclude generated simulation/report folders
+sim/** linguist-vendored
 reports/** linguist-vendored
 docs/** linguist-vendored
 results/** linguist-vendored
