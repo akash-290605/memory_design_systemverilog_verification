@@ -1,0 +1,23 @@
+# End time: 20:06:11 on Aug 31,2026, Elapsed time: 0:00:10
+# Errors: 0, Warnings: 1
+# vsim -assertdebug -coverage -wlf assert_combined.wlf -suppress 12110 -voptargs=""+acc"" work.mem_tb "+test_name=COMBINED_MATCH_MISMATCH_TEST" 
+# Start time: 20:06:11 on Aug 31,2026
+# ** Note: (vsim-8009) Loading existing optimized design _opt
+# Loading sv_std.std
+# Loading work.list_svh_unit(fast)
+# Loading work.mem_tb(fast)
+# Loading work.mem_interf(fast)
+# Loading work.memory(fast)
+# Loading work.mem_assert(fast)
+# Loading work.mem_interf(fast)
+# ** Warning: (vsim-8634) Code was not compiled with coverage options.
+# [TEST] Starting Test: COMBINED_MATCH_MISMATCH_TEST with N = 20
+# [Scoreboard] WRITE: Addr=20, Data=4660
+# [Scoreboard] READ: Addr=20, Data=4660
+# [Scoreboard] WRITE: Addr=30, Data=43690
+# [TEST PASSED] COMBINED_MATCH_MISMATCH_TEST
+# gen_count = 4 | bfm_count = 4
+# ** Note: $finish    : mem_tb.sv(233)
+#    Time: 165 ns  Iteration: 1  Instance: /mem_tb
+# 1
+# Break in Module mem_tb at mem_tb.sv line 233

@@ -1,0 +1,50 @@
+
+ASSERTION RESULTS:
+--------------------------------------------------------------------------------------------------------------------------------
+Name                 File(Line)                   Failure      Pass     Vacuous    Disable    Attempt     Active Peak Active ATV
+                                                  Count        Count    Count      Count      Count       Count  Count          
+--------------------------------------------------------------------------------------------------------------------------------
+/mem_tb/uut/RESET    mem_assert.sv(20)                  0         30       3159          0       3189          0           9 off
+/mem_tb/uut/PRESET   mem_assert.sv(29)                  0       3153         30          0       3189          6          18 off
+/mem_tb/uut/WRITE    mem_assert.sv(41)                  0       1048       2141          0       3189          0          16 off
+/mem_tb/uut/READ     mem_assert.sv(52)                  0       2132       1048          0       3189          9          18 off
+/mem_tb/uut/ADDR_RANGE
+                     mem_assert.sv(63)                  0       2090       1072         27       3189          0           8 off
+/mem_tb/uut/READY_RESP
+                     mem_assert.sv(74)                  0       2090       1072         27       3189          0          16 off
+/mem_tb/uut/RDATA_DEF
+                     mem_assert.sv(85)                  0       2109       1044         36       3189          0          18 off
+/list_svh_unit/mem_gen/run/#ublk#267133908#29/immed__60
+                     mem_gen.sv(60)                     0          1          0          0          1          0           0 off
+/list_svh_unit/mem_gen/run/#ublk#267133908#29/immed__53
+                     mem_gen.sv(53)                     0          1          0          0          1          0           0 off
+/list_svh_unit/mem_gen/run/#ublk#267133908#29/immed__43
+                     mem_gen.sv(43)                     0          1          0          0          1          0           0 off
+/list_svh_unit/mem_gen/run/#ublk#267133908#29/immed__34
+                     mem_gen.sv(34)                     0          1          0          0          1          0           0 off
+/list_svh_unit/mem_gen/run/#ublk#267133908#67/immed__69
+                     mem_gen.sv(69)                     0          5          0          0          5          0           0 off
+/list_svh_unit/mem_gen/run/#ublk#267133908#75/immed__79
+                     mem_gen.sv(79)                     0          1          0          0          1          0           0 off
+/list_svh_unit/mem_gen/run/#ublk#267133908#84/immed__93
+                     mem_gen.sv(93)                     0          1          0          0          1          0           0 off
+/list_svh_unit/mem_gen/run/#ublk#267133908#84/immed__88
+                     mem_gen.sv(88)                     0          1          0          0          1          0           0 off
+/list_svh_unit/mem_gen/run/#ublk#267133908#102/immed__104
+                     mem_gen.sv(104)                    0        260          0          0        260          0           0 off
+/list_svh_unit/mem_gen/run/#ublk#267133908#113/immed__116
+                     mem_gen.sv(116)                    0        260          0          0        260          0           0 off
+/list_svh_unit/mem_gen/run/#ublk#267133908#122/immed__148
+                     mem_gen.sv(148)                    0          1          0          0          1          0           0 off
+/list_svh_unit/mem_gen/run/#ublk#267133908#122/immed__142
+                     mem_gen.sv(142)                    0          1          0          0          1          0           0 off
+/list_svh_unit/mem_gen/run/#ublk#267133908#122/immed__136
+                     mem_gen.sv(136)                    0          1          0          0          1          0           0 off
+/list_svh_unit/mem_gen/run/#ublk#267133908#122/immed__127
+                     mem_gen.sv(127)                    0          1          0          0          1          0           0 off
+/list_svh_unit/mem_gen/run/#anonblk#267133908#157#4#/#ublk#267133908#157/immed__159
+                     mem_gen.sv(159)                    0        256          0          0        256          0           0 off
+/list_svh_unit/mem_gen/run/#anonblk#267133908#167#4#/#ublk#267133908#167/immed__170
+                     mem_gen.sv(170)                    0        256          0          0        256          0           0 off
+/list_svh_unit/mem_gen/run/#ublk#267133908#176/immed__180
+                     mem_gen.sv(180)                    0          2          0          0          2          0           0 off

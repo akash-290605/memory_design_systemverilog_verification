@@ -1,0 +1,20 @@
+# End time: 20:02:44 on Aug 31,2026, Elapsed time: 0:00:11
+# Errors: 0, Warnings: 0
+# vsim -coverage -wlf fcbest_mismatch.wlf -suppress 12110 -voptargs=""+acc"" work.mem_tb "+test_name=MISMATCH_TEST" 
+# Start time: 20:02:44 on Aug 31,2026
+# ** Note: (vsim-8009) Loading existing optimized design _opt
+# Loading sv_std.std
+# Loading work.list_svh_unit(fast)
+# Loading work.mem_tb(fast)
+# Loading work.mem_interf(fast)
+# Loading work.memory(fast)
+# Loading work.mem_assert(fast)
+# Loading work.mem_interf(fast)
+# [TEST] Starting Test: MISMATCH_TEST with N = 20
+# [Scoreboard] WRITE: Addr=10, Data=21845
+# [TEST PASSED] MISMATCH_TEST
+# gen_count = 2 | bfm_count = 2
+# ** Note: $finish    : mem_tb.sv(233)
+#    Time: 105 ns  Iteration: 1  Instance: /mem_tb
+# 1
+# Break in Module mem_tb at mem_tb.sv line 233

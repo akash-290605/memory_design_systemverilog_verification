@@ -1,0 +1,1295 @@
+Coverage Report by file with details
+
+=================================================================================
+=== File: list.svh
+=================================================================================
+Branch Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Branches                         1         1         0    100.00
+
+================================Branch Details================================
+
+Branch Coverage for file list.svh --
+
+------------------------------------CASE Branch------------------------------------
+    16                                         9     Count coming in to CASE
+Branch totals: 1 hit of 1 branch = 100.00%
+
+
+
+=================================================================================
+=== File: mem_agent.sv
+=================================================================================
+Statement Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Stmts                            8         8         0    100.00
+
+================================Statement Details================================
+
+Statement Coverage for file mem_agent.sv --
+
+    1                                                //========================================================================================================================
+    2                                                // Agent:
+    3                                                // Verification component that encapsulates generator, BFM, and monitor.
+    4                                                // It manages transaction-level communication with the DUT interface by
+    5                                                // generating stimulus, driving signals, and monitoring DUT responses.
+    6                                                //========================================================================================================================
+    7                                                
+    8                                                class mem_agent;
+    9                                                
+    10                                               	mem_gen gen;
+    11                                               	mem_bfm bfm;
+    12                                               	mem_mon mon;
+    13                                               	mem_cov cov;
+    14                                               	
+    15                                               	function new ();
+    16              1                          9     		gen =new();
+    17              1                          9     		bfm =new();
+    18              1                          9     		mon =new();
+    19              1                          9     		cov =new();
+    20                                               	endfunction
+    21                                               
+    22                                               	task run();
+    23                                               
+    24                                               		fork 
+    25              1                          9     			gen.run();
+    26              1                          9     			bfm.run();
+    27              1                          9     			mon.run();
+    28              1                          9     			cov.run();
+    29                                               		join
+    30                                               			
+    31                                               	endtask
+    32                                               	
+    33                                               endclass
+
+
+=================================================================================
+=== File: mem_assert.sv
+=================================================================================
+Toggle Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Toggle Bins                    154       154         0    100.00
+
+================================Toggle Details================================
+
+Toggle Coverage for File mem_assert.sv --
+
+       Line                                   Node      1H->0L      0L->1H  "Coverage"
+--------------------------------------------------------------------------------------
+
+Total Node Count     =         77 
+Toggled Node Count   =         77 
+Untoggled Node Count =          0 
+
+Toggle Coverage      =     100.00% (154 of 154 bins)
+
+=================================================================================
+=== File: mem_bfm.sv
+=================================================================================
+Statement Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Stmts                           18        18         0    100.00
+
+================================Statement Details================================
+
+Statement Coverage for file mem_bfm.sv --
+
+    1                                                //========================================================================================================================
+    2                                                // Bus Functional Model (BFM):
+    3                                                // Responsible for converting high-level transactions received from the generator
+    4                                                // into pin-level DUT interface signals. It drives read/write operations to the
+    5                                                // DUT through the virtual interface and handles communication timing according
+    6                                                // to the memory protocol.
+    7                                                //========================================================================================================================
+    8                                                
+    9                                                class mem_bfm;
+    10                                               	mem_tx tx;
+    11                                               
+    12                                               	task run();
+    13                                               	
+    14                                               	    //------------------------------------------------------
+    15                                               		// Get the data from the generator through the mailbox.
+    16                                               		//------------------------------------------------------
+    17              1                          9     		forever begin 
+    18              1                       1059     			mem_common::gen2bfm.get(tx);
+    19                                               			//tx.print("bfm");
+    20              1                       1050     			driver(tx);
+    21              1                       1050     			mem_common::bfm_count++;
+    22                                               		end
+    23                                                       //-------------------------------------------------------
+    24                                               
+    25                                               	endtask
+    26                                               	//-----------------------------------------------------------------------
+    27                                               	// Drive the generated data to the interface to communicate with the DUT.
+    28                                                   //-----------------------------------------------------------------------
+    29                                               	task driver (input mem_tx tx);
+    30              1                       1050     		@(mem_common::vif.bfm_cb);
+    31              1                       1050     		mem_common::vif.bfm_cb.wr_rd<=tx.wr_rd;
+    32              1                       1050     		mem_common::vif.bfm_cb.addr <=tx.addr;
+    33              1                       1050     		mem_common::vif.bfm_cb.valid <=tx.valid;
+    34                                               
+    35                                               		if(tx.wr_rd==1)
+    36              1                        524     			mem_common::vif.bfm_cb.wdata<=tx.wdata;
+    37                                               		else
+    38              1                        526     			mem_common::vif.bfm_cb.wdata<='0;
+    39                                               		
+    40              1                       1050     		@(mem_common::vif.bfm_cb);
+    41                                               
+    42                                               		if (tx.valid &&tx.wr_rd==0) begin
+    43              1                        522     			tx.rdata=mem_common::vif.bfm_cb.rdata;
+    44                                               		end
+    45                                               
+    46              1                       1050     			tx.ready= mem_common::vif.ready;
+    47              1                       1050     		@(mem_common::vif.bfm_cb);
+    48              1                       1050     			mem_common::vif.bfm_cb.wr_rd<=0;
+    49              1                       1050     			mem_common::vif.bfm_cb.addr <=0;
+    50              1                       1050     			mem_common::vif.bfm_cb.wdata<=0;
+    51              1                       1050     			mem_common::vif.bfm_cb.valid<=0;
+    52                                               
+    53                                               	//--------------------------------------------------------------------------
+    54                                               	endtask
+    55                                               endclass
+
+Branch Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Branches                         4         4         0    100.00
+
+================================Branch Details================================
+
+Branch Coverage for file mem_bfm.sv --
+
+------------------------------------IF Branch------------------------------------
+    35                                      1050     Count coming in to IF
+    35              1                        524     		if(tx.wr_rd==1)
+    37              1                        526     		else
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    42                                      1050     Count coming in to IF
+    42              1                        522     		if (tx.valid &&tx.wr_rd==0) begin
+                                             528     All False Count
+Branch totals: 2 hits of 2 branches = 100.00%
+
+
+Condition Coverage:
+    Enabled Coverage            Active   Covered    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    FEC Condition Terms              3         3         0    100.00
+
+================================Condition Details================================
+
+Condition Coverage for file mem_bfm.sv --
+
+----------------Focused Condition View-------------------
+Line       35 Item    1  (tx.wr_rd == 1)
+Condition totals: 1 of 1 input term covered = 100.00%
+
+----------------Focused Condition View-------------------
+Line       42 Item    1  (tx.valid && (tx.wr_rd == 0))
+Condition totals: 2 of 2 input terms covered = 100.00%
+
+
+
+=================================================================================
+=== File: mem_common.sv
+=================================================================================
+Statement Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Stmts                            3         3         0    100.00
+
+================================Statement Details================================
+
+Statement Coverage for file mem_common.sv --
+
+    1                                                //========================================================================================================================
+    2                                                // Common class containing shared mailboxes and variables used for communication
+    3                                                // between verification components and storing scoreboard comparison results.
+    4                                                //========================================================================================================================
+    5                                                
+    6                                                `define WIDTH 32
+    7                                                `define DEPTH 256  
+    8                                                `define ADDR_WIDTH $clog2(`DEPTH)
+    9                                                
+    10                                               class mem_common;
+    11                                               	static int N=20;
+    12                                               	static string test_name ="";
+    13                                               
+    14              1                          9     	static mailbox gen2bfm=new();
+    15              1                          9     	static mailbox mon2cov=new();
+    16              1                          9     	static mailbox mon2sbd=new();
+    17                                               
+    18                                               	static int matching    = 0;
+    19                                               	static int mismatching = 0;
+    20                                               	
+    21                                               	static int gen_count = 0;
+    22                                               	static int bfm_count = 0;
+    23                                               	static int mon_count = 0;
+    24                                               
+    25                                               	static virtual mem_interf vif;
+    26                                               
+    27                                               endclass
+
+
+=================================================================================
+=== File: mem_cov.sv
+=================================================================================
+Statement Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Stmts                            4         4         0    100.00
+
+================================Statement Details================================
+
+Statement Coverage for file mem_cov.sv --
+
+    1                                                //========================================================================================================================
+    2                                                // Coverage Class (mem_cov):
+    3                                                //
+    4                                                // The coverage class collects functional coverage information from monitored
+    5                                                // memory transactions. It verifies that different read/write operations,
+    6                                                // address ranges, and data patterns are exercised during simulation.
+    7                                                //
+    8                                                // Functionality:
+    9                                                // - Covers read and write transaction types.
+    10                                               // - Covers different memory address regions.
+    11                                               // - Covers write and read data patterns.
+    12                                               // - Performs cross coverage between operation type and address range.
+    13                                               //
+    14                                               // Purpose:
+    15                                               // Measures verification completeness and helps identify untested scenarios.
+    16                                               //========================================================================================================================
+    17                                               
+    18                                               class mem_cov;
+    19                                               
+    20                                               mem_tx tx;
+    21                                               	
+    22                                               	covergroup cg;
+    23                                               		
+    24                                               		WR_RD:coverpoint tx.wr_rd{
+    25                                               			
+    26                                               			bins WRITE ={1};
+    27                                               			bins READ  ={0};
+    28                                               
+    29                                               		}
+    30                                               
+    31                                               		ADDR:coverpoint tx.addr{
+    32                                               
+    33                                               			bins Low_addr = {[0:63]};
+    34                                               			bins Mid_adde = {[64:127]};
+    35                                               			bins HIGH_adde = {[128:191]};
+    36                                               			bins Last_adde = {[192:255]};
+    37                                               		}
+    38                                               		
+    39                                               		WDATA:coverpoint tx.wdata{
+    40                                               
+    41                                               			bins zeros    ={32'h00000000};
+    42                                               			ignore_bins all_onse ={32'hffffffff};
+    43                                               			bins others   =default;
+    44                                               		}
+    45                                               
+    46                                               		RDATA:coverpoint tx.rdata{
+    47                                               
+    48                                               			bins zeros    ={32'h00000000};
+    49                                               			ignore_bins all_onse ={32'hffffffff};
+    50                                               			bins others   =default;
+    51                                               		}
+    52                                               
+    53                                               		WR_ADDR_CROSS: cross WR_RD,ADDR;
+    54                                               	endgroup
+    55                                               	function new();
+    56              1                          9     		cg=new();
+    57                                               	endfunction
+    58                                               
+    59                                               	task run();
+    60                                               		
+    61              1                          9     		forever begin
+    62              1                       1054     			mem_common::mon2cov.get(tx);
+    63              1                       1045     			cg.sample();
+    64                                               		end
+    65                                               
+    66                                               	endtask
+    67                                               endclass
+
+
+=================================================================================
+=== File: mem_env.sv
+=================================================================================
+Statement Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Stmts                            4         4         0    100.00
+
+================================Statement Details================================
+
+Statement Coverage for file mem_env.sv --
+
+    1                                                //========================================================================================================================
+    2                                                // Environment:
+    3                                                // Top-level verification component that connects agents components. It builds the environment to run the Test Bench architecture
+    4                                                //========================================================================================================================
+    5                                                class mem_env;
+    6                                                	mem_agent agent;
+    7                                                	mem_sbd   sbd;
+    8                                                
+    9                                                	function new();
+    10              1                          9     		agent = new();
+    11              1                          9     		sbd   = new();
+    12                                               	endfunction
+    13                                               
+    14                                               	task run();
+    15                                               		fork 
+    16              1                          9     			agent.run();
+    17              1                          9     			sbd.run();
+    18                                               		join
+    19                                               	endtask
+    20                                               	
+    21                                               endclass
+
+
+=================================================================================
+=== File: mem_gen.sv
+=================================================================================
+Statement Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Stmts                           64        64         0    100.00
+
+================================Statement Details================================
+
+Statement Coverage for file mem_gen.sv --
+
+    1                                                //========================================================================================================================
+    2                                                // Generator Class (mem_gen):
+    3                                                //
+    4                                                // The generator is responsible for creating memory transactions and
+    5                                                // sending them to the BFM through a mailbox based on the selected test scenario.
+    6                                                //
+    7                                                // Functionality:
+    8                                                // - Supports configurable test scenarios via mem_common::test_name (e.g., NWR_NRD, BOUNDARY_TEST, INVALID_TEST, ADDR_SWEEP, UNWRITTEN_READ_TEST, MISMATCH_TEST).
+    9                                                // - Generates random write transactions with randomized address, data, and valid control.
+    10                                               // - Tracks written transactions in a temporary queue using copy constructors (temp = new tx) for read verification.
+    11                                               // - Generates matching read transactions or specialized edge cases (boundary addresses, invalid protocol tests, sweeps, unwritten reads, and mismatches).
+    12                                               // - Sends all generated transactions to the BFM for driving onto the DUT.
+    13                                               //
+    14                                               // Data Flow:
+    15                                               // Generator → Mailbox → BFM → DUT
+    16                                               //
+    17                                               // Purpose:
+    18                                               // Provides targeted and constrained random stimulus generation to verify memory read/write
+    19                                               // operations, boundary limits, scoreboard unwritten fallbacks, mismatch handling, and 100% code coverage.
+    20                                               //========================================================================================================================
+    21                                               
+    22                                               class mem_gen;
+    23                                               	
+    24                                               	task run();
+    25                                               		mem_tx tx, temp, tempq[$];
+    26                                               
+    27                                               		case (mem_common::test_name)
+    28                                               			
+    29                                               			"BOUNDARY_TEST": begin
+    30              1                          1     				mem_common::gen_count = 4;
+    31                                               				
+    32                                               				// Write to min address (0)
+    33              1                          1     				tx = new();
+    34                                               				assert(tx.randomize() with { wr_rd == 1; addr == 0; valid == 1; })
+    35                                               					else $fatal(1, "Boundary min write failed!");
+    36                                               				
+    37              1                          1     				temp = new tx;
+    38              1                          1     				tempq.push_back(temp);
+    39              1                          1     				mem_common::gen2bfm.put(tx);
+    40                                               
+    41                                               				// Write to max address (`DEPTH-1`)
+    42              1                          1     				tx = new();
+    43                                               				assert(tx.randomize() with { wr_rd == 1; addr == `DEPTH-1; valid == 1; })
+    44                                               					else $fatal(1, "Boundary max write failed!");
+    45                                               				
+    46              1                          1     				temp = new tx;
+    47              1                          1     				tempq.push_back(temp);
+    48              1                          1     				mem_common::gen2bfm.put(tx);
+    49                                               
+    50                                               				// Read back min address
+    51              1                          1     				tx = new();
+    52              1                          1     				temp = tempq.pop_front();
+    53                                               				assert(tx.randomize() with { wr_rd == 0; addr == temp.addr; wdata == 0; valid == 1; })
+    54                                               					else $fatal(1, "Boundary min read failed!");
+    55              1                          1     				mem_common::gen2bfm.put(tx);
+    56                                               
+    57                                               				// Read back max address
+    58              1                          1     				tx = new();
+    59              1                          1     				temp = tempq.pop_front();
+    60                                               				assert(tx.randomize() with { wr_rd == 0; addr == temp.addr; wdata == 0; valid == 1; })
+    61                                               					else $fatal(1, "Boundary max read failed!");
+    62              1                          1     				mem_common::gen2bfm.put(tx);
+    63                                               			end
+    64                                               
+    65                                               			"INVALID_TEST": begin
+    66              1                          1     				mem_common::gen_count = 5;
+    67              1                          5     				repeat (5) begin
+    68              1                          5     					tx = new();
+    69                                               					assert(tx.randomize() with { valid == 0; })
+    70                                               						else $fatal(1, "Invalid transaction randomization failed!");
+    71              1                          5     					mem_common::gen2bfm.put(tx);
+    72                                               				end
+    73                                               			end
+    74                                               
+    75                                               			"UNWRITTEN_READ_TEST": begin
+    76                                               				// Hits scoreboard asso.exists() false branch by reading an unwritten location[cite: 1]
+    77              1                          1     				mem_common::gen_count = 1;
+    78              1                          1     				tx = new();
+    79                                               				assert(tx.randomize() with { wr_rd == 0; addr == 150; valid == 1; })
+    80                                               					else $fatal(1, "Unwritten read randomization failed!");
+    81              1                          1     				mem_common::gen2bfm.put(tx);
+    82                                               			end
+    83                                               
+    84                                               			"MISMATCH_TEST": begin
+    85              1                          1     				mem_common::gen_count = 2;
+    86                                               				
+    87              1                          1     				tx = new();
+    88                                               				assert(tx.randomize() with { wr_rd == 1; addr == 10; wdata == 32'h5555; valid == 1; })
+    89                                               					else $fatal(1, "Mismatch write failed!");
+    90              1                          1     				mem_common::gen2bfm.put(tx);
+    91                                               
+    92              1                          1     				tx = new();
+    93                                               				assert(tx.randomize() with { wr_rd == 0; addr == 10; wdata == 0; valid == 1; })
+    94                                               					else $fatal(1, "Mismatch read failed!");
+    95              1                          1     				mem_common::gen2bfm.put(tx); 
+    96                                               			end
+    97                                               
+    98                                               			"NWR_NRD": begin 
+    99              1                          1     				mem_common::gen_count = 2 * mem_common::N;
+    100                                              
+    101                                              				// Generating Writes 
+    102             1                        260     				repeat (mem_common::N) begin
+    103             1                        260     					tx = new();
+    104                                              					assert (tx.randomize() with { wr_rd == 1; valid == 1; })
+    105                                              						else $fatal(1, "Write transaction randomization failed!");
+    106                                              					
+    107             1                        260     					temp = new tx; 
+    108             1                        260     					tempq.push_back(temp);
+    109             1                        260     					mem_common::gen2bfm.put(tx);
+    110                                              				end
+    111                                              
+    112                                              				// Generating Reads matching written data
+    113             1                        260     				repeat (mem_common::N) begin
+    114             1                        260     					tx = new();
+    115             1                        260     					temp = tempq.pop_front();
+    116                                              					assert(tx.randomize() with { wr_rd == 0; addr == temp.addr; wdata == 0; valid == 1; })
+    117                                              						else $fatal(1, "Read transaction randomization failed!");
+    118             1                        260     					mem_common::gen2bfm.put(tx);
+    119                                              				end
+    120                                              			end
+    121                                              
+    122                                              			"COMBINED_MATCH_MISMATCH_TEST": begin
+    123             1                          1     				mem_common::gen_count = 4;
+    124                                              
+    125                                              				// 1. Successful Write
+    126             1                          1     				tx = new();
+    127                                              				assert(tx.randomize() with { wr_rd == 1; addr == 20; wdata == 32'h1234; valid == 1; })
+    128                                              					else $fatal(1, "Combined write failed!");
+    129             1                          1     				temp = new tx;
+    130             1                          1     				tempq.push_back(temp);
+    131             1                          1     				mem_common::gen2bfm.put(tx);
+    132                                              
+    133                                              				// 2. Matching Read (increments matching count)
+    134             1                          1     				tx = new();
+    135             1                          1     				temp = tempq.pop_front();
+    136                                              				assert(tx.randomize() with { wr_rd == 0; addr == temp.addr; wdata == 0; valid == 1; })
+    137                                              					else $fatal(1, "Combined matching read failed!");
+    138             1                          1     				mem_common::gen2bfm.put(tx);
+    139                                              
+    140                                              				// 3. Mismatch Write
+    141             1                          1     				tx = new();
+    142                                              				assert(tx.randomize() with { wr_rd == 1; addr == 30; wdata == 32'hAAAA; valid == 1; })
+    143                                              					else $fatal(1, "Combined mismatch write failed!");
+    144             1                          1     				mem_common::gen2bfm.put(tx);
+    145                                              
+    146                                              				// 4. Mismatch Read (increments mismatching count via scoreboard override)
+    147             1                          1     				tx = new();
+    148                                              				assert(tx.randomize() with { wr_rd == 0; addr == 30; wdata == 0; valid == 1; })
+    149                                              					else $fatal(1, "Combined mismatch read failed!");
+    150             1                          1     				mem_common::gen2bfm.put(tx);
+    151                                              			end
+    152                                              
+    153                                              			"ADDR_SWEEP": begin
+    154             1                          1     				mem_common::gen_count = 512; 
+    155                                              
+    156                                              				// Sequential write sweep across every single address from 0 to 255
+    157             1                          1     				for (int i = 0; i < 256; i++) begin
+    157             2                        256     
+    158             1                        256     					tx = new();
+    159                                              					assert(tx.randomize() with { wr_rd == 1; addr == i; valid == 1; })
+    160                                              						else $fatal(1, "Address sweep write failed at addr!");
+    161             1                        256     					temp = new tx;
+    162             1                        256     					tempq.push_back(temp);
+    163             1                        256     					mem_common::gen2bfm.put(tx);
+    164                                              				end
+    165                                              
+    166                                              				// Sequential read sweep matching every address from 0 to 255
+    167             1                          1     				for (int i = 0; i < 256; i++) begin
+    167             2                        256     
+    168             1                        256     					tx = new();
+    169             1                        256     					temp = tempq.pop_front();
+    170                                              					assert(tx.randomize() with { wr_rd == 0; addr == temp.addr; wdata == 0; valid == 1; })
+    171                                              						else $fatal(1, "Address sweep read failed!");
+    172             1                        256     					mem_common::gen2bfm.put(tx);
+    173                                              				end
+    174                                              			end
+    175                                              
+    176                                              			default: begin
+    177                                              				// Hits the unvisited default case in mem_gen to complete 100% branch/statement coverage[cite: 1]
+    178             1                          2     				mem_common::gen_count = 1;
+    179             1                          2     				tx = new();
+    180                                              				assert(tx.randomize() with { wr_rd == 1; valid == 1; })
+    181                                              					else $fatal(1, "Default transaction randomization failed!");
+    182             1                          2     				mem_common::gen2bfm.put(tx);
+    183                                              			end
+    184                                              
+    185                                              		endcase
+    186                                              
+    187                                              	endtask
+    188                                              endclass
+
+Branch Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Branches                         1         1         0    100.00
+
+================================Branch Details================================
+
+Branch Coverage for file mem_gen.sv --
+
+------------------------------------CASE Branch------------------------------------
+    27                                         9     Count coming in to CASE
+    176             1                          2     			default: begin
+Branch totals: 1 hit of 1 branch = 100.00%
+
+
+
+=================================================================================
+=== File: mem_interf.sv
+=================================================================================
+Statement Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Stmts                            4         4         0    100.00
+
+================================Statement Details================================
+
+Statement Coverage for file mem_interf.sv --
+
+    1                                                //========================================================================================================================
+    2                                                // Memory Interface (mem_interf):
+    3                                                //
+    4                                                // The interface provides a common communication channel between the DUT and
+    5                                                // verification components. It encapsulates all memory transaction signals and
+    6                                                // provides clocking blocks to synchronize stimulus driving and signal monitoring.
+    7                                                //
+    8                                                // Signals:
+    9                                                // - wr_rd : Indicates memory operation type (Write/Read).
+    10                                               // - addr  : Memory address for access.
+    11                                               // - wdata : Data written into memory.
+    12                                               // - rdata : Data read from memory.
+    13                                               // - valid : Indicate data is valid or not
+    14                                               // - ready : Indicates a memory is ready for transaction.
+    15                                               // Clocking Blocks:
+    16                                               // 1. bfm_cb:
+    17                                               //    - Used by BFM/driver to drive input signals to DUT and sample DUT outputs.
+    18                                               //    - Provides proper timing synchronization with the clock.
+    19                                               //
+    20                                               // 2. mon_cb:
+    21                                               //    - Used by monitor to sample DUT interface signals safely.
+    22                                               //    - Prevents race conditions between DUT and testbench.
+    23                                               //
+    24                                               // Purpose:
+    25                                               // Provides clean and synchronized communication between DUT, BFM, and Monitor.
+    26                                               //========================================================================================================================
+    27                                               
+    28                                               interface mem_interf(input clk,input rst);
+    29                                               	bit                     wr_rd;
+    30                                               	bit  [`ADDR_WIDTH-1:0] addr;
+    31                                               	bit  [`WIDTH-1:0]       wdata;
+    32                                               	bit  [`WIDTH-1:0]       rdata;
+    33                                               	bit                     valid;
+    34                                               	bit                     ready;
+    35                                               
+    36              1                          9     	clocking bfm_cb @(posedge clk );
+    37                                               		default input #1 output #1;
+    38              1                          9     			input rdata ,ready;
+    39                                               			output wr_rd,addr,wdata,valid;
+    40                                               	endclocking
+    41                                               
+    42              1                          9     	clocking mon_cb @(posedge clk );
+    43                                               		default input #1 output #1;
+    44              1                          9     			input rdata ,valid,wr_rd,addr,wdata,ready;
+    45                                               	endclocking
+    46                                               
+    47                                               endinterface
+
+Toggle Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Toggle Bins                    154       154         0    100.00
+
+================================Toggle Details================================
+
+Toggle Coverage for File mem_interf.sv --
+
+       Line                                   Node      1H->0L      0L->1H  "Coverage"
+--------------------------------------------------------------------------------------
+
+Total Node Count     =         77 
+Toggled Node Count   =         77 
+Untoggled Node Count =          0 
+
+Toggle Coverage      =     100.00% (154 of 154 bins)
+
+=================================================================================
+=== File: mem_mon.sv
+=================================================================================
+Statement Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Stmts                           11        11         0    100.00
+
+================================Statement Details================================
+
+Statement Coverage for file mem_mon.sv --
+
+    1                                                //==================================================================
+    2                                                // Monitor Class (mem_mon):
+    3                                                //
+    4                                                // The monitor is responsible for observing DUT interface signals and converting
+    5                                                // pin-level activity into transaction-level data.
+    6                                                //
+    7                                                // Functionality:
+    8                                                // - Samples DUT signals through the virtual interface and clocking block.
+    9                                                // - Captures valid memory transactions from the DUT interface.
+    10                                               // - Collects read/write information, address, write data, and read data.
+    11                                               // - Sends captured transactions to scoreboard for checking and coverage
+    12                                               //   component for functional coverage collection.
+    13                                               //
+    14                                               // Data Flow:
+    15                                               // DUT Interface → Monitor → Scoreboard / Coverage
+    16                                               //
+    17                                               //===================================================================
+    18                                               
+    19                                               class mem_mon;
+    20                                               
+    21                                               	mem_tx tx;
+    22                                               
+    23                                               	task run();
+    24                                               
+    25              1                          9     		forever begin
+    26              1                       3180     		 @(mem_common::vif.mon_cb);
+    27                                               
+    28                                               		 if(mem_common::vif.mon_cb.valid && mem_common::vif.mon_cb.ready ) begin
+    29              1                       1045     			tx=new();
+    30              1                       1045     			tx.wr_rd = mem_common::vif.mon_cb.wr_rd;
+    31              1                       1045     			tx.addr = mem_common::vif.mon_cb.addr;
+    32              1                       1045     			tx.valid = mem_common::vif.mon_cb.valid;
+    33              1                       1045     			tx.ready = mem_common::vif.mon_cb.ready;
+    34                                               			if(mem_common::vif.mon_cb.wr_rd)begin
+    35              1                        523     				tx.wdata = mem_common::vif.mon_cb.wdata;
+    36                                               			end
+    37                                               
+    38                                               			if(!mem_common::vif.mon_cb.wr_rd)begin
+    39              1                        522     				tx.rdata = mem_common::vif.mon_cb.rdata;
+    40                                               			end
+    41                                               			//tx.print("mon");
+    42              1                       1045     			mem_common::mon2cov.put(tx);
+    43              1                       1045     			mem_common::mon2sbd.put(tx);
+    44                                               
+    45                                               		 end
+    46                                               		end
+    47                                               	endtask
+    48                                               endclass
+
+Branch Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Branches                         6         6         0    100.00
+
+================================Branch Details================================
+
+Branch Coverage for file mem_mon.sv --
+
+------------------------------------IF Branch------------------------------------
+    28                                      3171     Count coming in to IF
+    28              1                       1045     		 if(mem_common::vif.mon_cb.valid && mem_common::vif.mon_cb.ready ) begin
+                                            2126     All False Count
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    34                                      1045     Count coming in to IF
+    34              1                        523     			if(mem_common::vif.mon_cb.wr_rd)begin
+                                             522     All False Count
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    38                                      1045     Count coming in to IF
+    38              1                        522     			if(!mem_common::vif.mon_cb.wr_rd)begin
+                                             523     All False Count
+Branch totals: 2 hits of 2 branches = 100.00%
+
+
+
+=================================================================================
+=== File: mem_sbd.sv
+=================================================================================
+Statement Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Stmts                           10        10         0    100.00
+
+================================Statement Details================================
+
+Statement Coverage for file mem_sbd.sv --
+
+    1                                                //--------------------------------------------------------------------------------------------
+    2                                                // Scoreboard Class (mem_sbd):
+    3                                                //
+    4                                                // The scoreboard is responsible for checking the functional correctness of
+    5                                                // the DUT by comparing the expected results with the actual DUT responses.
+    6                                                //
+    7                                                // Functionality:
+    8                                                // - Receives monitored transactions from the monitor through a mailbox.
+    9                                                // - Stores expected write data in an associative array as a reference model.
+    10                                               // - Compares DUT read data with the expected data stored in the reference model.
+    11                                               // - Maintains matching and mismatching counts to report verification status.
+    12                                               //
+    13                                               // Data Flow:
+    14                                               // Monitor → Scoreboard → Reference Model → Data Comparison
+    15                                               //------------------------------------------------------------------------------------------------
+    16                                               class mem_sbd;
+    17                                               	mem_tx tx;
+    18                                               	bit [`WIDTH-1:0] asso[*];
+    19                                               	task run();
+    20              1                          9     		tx=new();
+    21                                               
+    22              1                          9     		forever begin
+    23              1                       1054     			mem_common::mon2sbd.get(tx);
+    24                                               
+    25                                               			if(tx.wr_rd==1)begin 
+    26              1                        523     					asso[tx.addr]=tx.wdata;
+    27              1                        523     					$display("[Scoreboard] WRITE: Addr=%0d, Data=%0d", tx.addr, tx.wdata);
+    28                                               			end
+    29                                               			else begin
+    30                                               			// Check if address exists in associative array; if not, default expected is 0
+    31              1                        522     				bit [`WIDTH-1:0] expected = asso.exists(tx.addr) ? asso[tx.addr] : '0;
+    32                                               				// Force mismatch for MISMATCH_TEST, or specifically for addr == 30 during COMBINED_MATCH_MISMATCH_TEST
+    33                                               				if ((mem_common::test_name.compare("MISMATCH_TEST") == 0) || 
+    34                                               				    (mem_common::test_name.compare("COMBINED_MATCH_MISMATCH_TEST") == 0 && tx.addr == 30)) begin
+    35              1                          2     					expected = expected + 1;
+    36                                               				end
+    37                                               
+    38                                               				if(tx.rdata==expected) begin
+    39              1                        520     					mem_common::matching++;
+    40              1                        520     					$display("[Scoreboard] READ: Addr=%0d, Data=%0d", tx.addr, tx.rdata);
+    41                                               
+    42                                               				end
+    43              1                          2     				else mem_common::mismatching++;
+    44                                               			end
+    45                                               		end
+    46                                               
+    47                                               	endtask
+    48                                               
+    49                                               endclass
+
+Branch Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Branches                         8         8         0    100.00
+
+================================Branch Details================================
+
+Branch Coverage for file mem_sbd.sv --
+
+------------------------------------IF Branch------------------------------------
+    25                                      1045     Count coming in to IF
+    25              1                        523     			if(tx.wr_rd==1)begin 
+    29              1                        522     			else begin
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    31                                       522     Count coming in to IF
+    31              1                        521     				bit [`WIDTH-1:0] expected = asso.exists(tx.addr) ? asso[tx.addr] : '0;
+    31              2                          1     				bit [`WIDTH-1:0] expected = asso.exists(tx.addr) ? asso[tx.addr] : '0;
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    33                                       522     Count coming in to IF
+    33              1                          2     				if ((mem_common::test_name.compare("MISMATCH_TEST") == 0) || 
+                                             520     All False Count
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    38                                       522     Count coming in to IF
+    38              1                        520     				if(tx.rdata==expected) begin
+    43              1                          2     				else mem_common::mismatching++;
+Branch totals: 2 hits of 2 branches = 100.00%
+
+
+Condition Coverage:
+    Enabled Coverage            Active   Covered    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    FEC Condition Terms              5         5         0    100.00
+
+================================Condition Details================================
+
+Condition Coverage for file mem_sbd.sv --
+
+----------------Focused Condition View-------------------
+Line       25 Item    1  (this.tx.wr_rd == 1)
+Condition totals: 1 of 1 input term covered = 100.00%
+
+----------------Focused Condition View-------------------
+Line       33 Item    1  ((compare(test_name,'h4d49534d415443485f54455354) == 0) || ((compare(test_name,'h434f4d42494e45445f4d415443485f4d49534d415443485f54455354) == 0) && (this.tx.addr == 30)))
+Condition totals: 3 of 3 input terms covered = 100.00%
+
+----------------Focused Condition View-------------------
+Line       38 Item    1  (this.tx.rdata == expected)
+Condition totals: 1 of 1 input term covered = 100.00%
+
+
+
+=================================================================================
+=== File: mem_tb.sv
+=================================================================================
+Statement Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Stmts                           12        12         0    100.00
+
+================================Statement Details================================
+
+Statement Coverage for file mem_tb.sv --
+
+    1                                                //========================================================================================================================
+    2                                                // Testbench Top Module
+    3                                                //
+    4                                                // Description:
+    5                                                //   Top-level simulation module for the memory DUT.
+    6                                                //   This module:
+    7                                                //   1. Generates clock and reset
+    8                                                //   2. Instantiates the interface
+    9                                                //   3. Instantiates the memory DUT
+    10                                               //   4. Instantiates assertions
+    11                                               //   5. Connects the virtual interface
+    12                                               //   6. Reads test name and N from plusargs
+    13                                               //   7. Creates and runs the test
+    14                                               //   8. Prints TEST PASSED / TEST FAILED
+    15                                               //========================================================================================================================
+    16                                               
+    17                                               module mem_tb;
+    18                                               
+    19                                                   //====================================================================================================================
+    20                                                   // Clock and Reset
+    21                                                   //====================================================================================================================
+    22                                                   reg clk;
+    23                                                   reg rst;
+    24                                               
+    25                                                   // Test object
+    26                                                   mem_test test;
+    27                                               
+    28                                               
+    29                                                   //====================================================================================================================
+    30                                                   // Physical Interface
+    31                                                   //====================================================================================================================
+    32                                                   // Interface connects the testbench components with the DUT.
+    33                                                   mem_interf pif(clk, rst);
+    34                                               
+    35                                               
+    36                                                   //====================================================================================================================
+    37                                                   // DUT - Memory
+    38                                                   //====================================================================================================================
+    39                                                   memory dut (
+    40                                                       .clk   (pif.clk),
+    41                                                       .rst   (pif.rst),
+    42                                                       .wr_rd (pif.wr_rd),
+    43                                                       .addr  (pif.addr),
+    44                                                       .wdata (pif.wdata),
+    45                                                       .rdata (pif.rdata),
+    46                                                       .valid (pif.valid),
+    47                                                       .ready (pif.ready)
+    48                                                   );
+    49                                               
+    50                                               
+    51                                                   //====================================================================================================================
+    52                                                   // Assertions
+    53                                                   //====================================================================================================================
+    54                                                   mem_assert uut (
+    55                                                       .clk   (pif.clk),
+    56                                                       .rst   (pif.rst),
+    57                                                       .wr_rd (pif.wr_rd),
+    58                                                       .addr  (pif.addr),
+    59                                                       .wdata (pif.wdata),
+    60                                                       .rdata (pif.rdata),
+    61                                                       .valid (pif.valid),
+    62                                                       .ready (pif.ready)
+    63                                                   );
+    64                                               
+    65                                               
+    66                                                   //====================================================================================================================
+    67                                                   // Clock Generation
+    68                                                   //====================================================================================================================
+    69                                                   // Clock period = 10 ns
+    70              1                       6396         always #5 clk = ~clk;
+    70              2                       6387     
+    71                                               
+    72                                               
+    73                                                   //====================================================================================================================
+    74                                                   // Test Initialization and Execution
+    75                                                   //====================================================================================================================
+    76                                                   initial begin
+    77                                               
+    78                                                       // Initialize clock and reset
+    79              1                          9             clk = 0;
+    80              1                          9     		rst = 1;
+    81                                               
+    82                                               
+    83                                                       //---------------------------------------------------------------------------------------------------------------
+    84                                                       // Connect physical interface to virtual interface
+    85                                                       //---------------------------------------------------------------------------------------------------------------
+    86              1                          9             mem_common::vif = pif;
+    87                                               
+    88                                               
+    89                                                       //---------------------------------------------------------------------------------------------------------------
+    90                                                       // Hold reset for 3 clock cycles
+    91                                                       //---------------------------------------------------------------------------------------------------------------
+    92              1                         27             repeat (3) @(posedge clk);
+    92              2                         27     
+    93              1                          9             rst = 0;
+    94                                               
+    95                                               
+    96                                                       //---------------------------------------------------------------------------------------------------------------
+    97                                                       // Read test parameters from command line
+    98                                                       //
+    99                                                       // Example:
+    100                                                      //   +test_name=NWR_NRD
+    101                                                      //   +N=260
+    102                                                      //---------------------------------------------------------------------------------------------------------------
+    103             1                          9             void'($value$plusargs("N=%d", mem_common::N));
+    104             1                          9             void'($value$plusargs("test_name=%s", mem_common::test_name));
+    105                                              
+    106                                              
+    107                                                      //---------------------------------------------------------------------------------------------------------------
+    108                                                      // Create and run the test
+    109                                                      //---------------------------------------------------------------------------------------------------------------
+    110             1                          9             test = new();
+    111             1                          9             test.run();
+    112                                              
+    113                                                  end
+    114                                              
+    115                                              
+    116                                                  //====================================================================================================================
+    117                                                  // Test Result
+    118                                                  //
+    119                                                  // This block checks the scoreboard result and prints whether
+    120                                                  // the current testcase PASSED or FAILED.
+    121                                                  //
+    122                                                  // Coverage is disabled for this result-checking code so that
+    123                                                  // these if/else conditions do not create unwanted coverage
+    124                                                  // points.
+    125                                                  //====================================================================================================================
+    126                                              
+    127                                                  // pragma coverage off
+    128                                              
+    129                                                  initial begin
+    130                                              
+    131                                                      // Allow the testbench to start processing
+    132             1                      E-hit             #50;
+    133                                              
+    134                                              
+    135                                                      // Wait until generator and BFM process the same number
+    136                                                      // of transactions.
+    137             1                      E-hit             wait(mem_common::gen_count == mem_common::bfm_count);
+    138                                              
+    139                                              
+    140                                                      // Allow scoreboard/BFM to complete
+    141             1                      E-hit             #20;
+    142                                              
+    143                                              
+    144                                                      //---------------------------------------------------------------------------------------------------------------
+    145                                                      // COMBINED_MATCH_MISMATCH_TEST
+    146                                                      //
+    147                                                      // Expected:
+    148                                                      //   At least one matching transaction
+    149                                                      //   At least one mismatching transaction
+    150                                                      //---------------------------------------------------------------------------------------------------------------
+    151                                                      if (mem_common::test_name.compare("COMBINED_MATCH_MISMATCH_TEST") == 0) begin
+    152                                              
+    153                                                          if ((mem_common::matching > 0) &&
+    154                                                              (mem_common::mismatching > 0)) begin
+    155                                              
+    156             1                      E-hit                     $display("[TEST PASSED] %s",
+    157                                                                       mem_common::test_name);
+    158                                              
+    159                                                          end
+    160                                                          else begin
+    161                                              
+    162             1                          E                     $display("[TEST FAILED] %s",
+    163                                                                       mem_common::test_name);
+    164                                              
+    165                                                          end
+    166                                              
+    167                                                      end
+    168                                              
+    169                                              
+    170                                                      //---------------------------------------------------------------------------------------------------------------
+    171                                                      // MISMATCH_TEST
+    172                                                      //
+    173                                                      // Expected:
+    174                                                      //   At least one mismatching transaction
+    175                                                      //---------------------------------------------------------------------------------------------------------------
+    176                                                      else if (mem_common::test_name.compare("MISMATCH_TEST") == 0) begin
+    177                                              
+    178                                                          if (mem_common::mismatching > 0) begin
+    179                                              
+    180             1                      E-hit                     $display("[TEST PASSED] %s",
+    181                                                                       mem_common::test_name);
+    182                                              
+    183                                                          end
+    184                                                          else begin
+    185                                              
+    186             1                          E                     $display("[TEST FAILED] %s",
+    187                                                                       mem_common::test_name);
+    188                                              
+    189                                                          end
+    190                                              
+    191                                                      end
+    192                                              
+    193                                              
+    194                                                      //---------------------------------------------------------------------------------------------------------------
+    195                                                      // All Other Tests
+    196                                                      //
+    197                                                      // Expected:
+    198                                                      //   At least one matching transaction
+    199                                                      //   No mismatching transaction
+    200                                                      //---------------------------------------------------------------------------------------------------------------
+    201                                                      else begin
+    202                                              
+    203                                                          if ((mem_common::matching > 0) &&
+    204                                                              (mem_common::mismatching == 0)) begin
+    205                                              
+    206             1                      E-hit                     $display("[TEST PASSED] %s",
+    207                                                                       mem_common::test_name);
+    208                                              
+    209                                                          end
+    210                                                          else begin
+    211                                              
+    212             1                      E-hit                     $display("[TEST FAILED] %s",
+    213                                                                       mem_common::test_name);
+    214                                              
+    215                                                          end
+    216                                              
+    217                                                      end
+    218                                              
+    219                                              
+    220                                                      //---------------------------------------------------------------------------------------------------------------
+    221                                                      // Display transaction count
+    222                                                      //---------------------------------------------------------------------------------------------------------------
+    223             1                      E-hit             $display("gen_count = %0d | bfm_count = %0d",
+    224                                                               mem_common::gen_count,
+    225                                                               mem_common::bfm_count);
+    226             1                      E-hit     					rst=1;
+    227                                              
+    228             1                      E-hit     		repeat (2) @(posedge clk);
+    228             2                      E-hit     
+    229                                              
+    230                                                      //---------------------------------------------------------------------------------------------------------------
+    231                                                      // End simulation
+    232                                                      //---------------------------------------------------------------------------------------------------------------
+    233             1                      E-hit             $finish;
+    234                                              
+    235                                                  end
+    236                                              
+    237                                                  // pragma coverage on
+    238                                              
+    239                                              
+    240                                              endmodule
+
+Toggle Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Toggle Bins                      2         2         0    100.00
+
+================================Toggle Details================================
+
+Toggle Coverage for File mem_tb.sv --
+
+       Line                                   Node      1H->0L      0L->1H  "Coverage"
+--------------------------------------------------------------------------------------
+
+Total Node Count     =          1 
+Toggled Node Count   =          1 
+Untoggled Node Count =          0 
+
+Toggle Coverage      =     100.00% (2 of 2 bins)
+
+=================================================================================
+=== File: mem_test.sv
+=================================================================================
+Statement Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Stmts                            3         3         0    100.00
+
+================================Statement Details================================
+
+Statement Coverage for file mem_test.sv --
+
+    1                                                class mem_test;
+    2                                                	mem_env env;
+    3                                                
+    4                                                	function new();
+    5               1                          9     		env = new();
+    6                                                	endfunction
+    7                                                
+    8                                                	task run();
+    9                                                
+    10              1                          9     		$display("[TEST] Starting Test: %s with N = %0d", mem_common::test_name, mem_common::N);
+    11                                               		
+    12              1                          9     		env.run();
+    13                                               	endtask
+    14                                               endclass
+
+
+=================================================================================
+=== File: memory.v
+=================================================================================
+Statement Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Stmts                           12        12         0    100.00
+
+================================Statement Details================================
+
+Statement Coverage for file memory.v --
+
+    1                                                // -----------------------------------------------------------------------------
+    2                                                // Module      : memory
+    3                                                // Description : 1 KB Single-Port Synchronous Memory
+    4                                                //
+    5                                                // Memory Size : 1 KB (1024 Bytes)
+    6                                                // Data Width  : 32 bits (4 Bytes per word)
+    7                                                // Depth       : 256 Words
+    8                                                // Address Width : 8 bits (log2(256) = 8)
+    9                                                //
+    10                                               // Operations:
+    11                                               //   - Write : Synchronous write on positive edge of clock.
+    12                                               //   - Read  : Synchronous read on positive edge of clock.
+    13                                               //   - Reset : Clears rdata and valid signal.
+    14                                               //   - Valid : Asserted for one clock cycle after successful read/write.
+    15                                               //----------------------------------------------------------------------------------
+    16                                               
+    17                                               //`define WIDTH 32
+    18                                               //`define DEPTH 256
+    19                                               //`define ADDR_WIDTH $clog2(`DEPTH)
+    20                                               
+    21                                               module memory(clk,rst,wr_rd,addr,wdata,rdata,valid,ready);
+    22                                               	input clk,rst,wr_rd,valid;
+    23                                               	input [`ADDR_WIDTH-1:0] addr;
+    24                                               	input [`WIDTH-1:0] wdata;
+    25                                               	output reg [`WIDTH-1:0] rdata;
+    26                                               	output reg ready;
+    27                                               	
+    28                                               	reg [`WIDTH-1:0]mem[`DEPTH-1:0];
+    29                                               
+    30              1                       3182     	always @(posedge clk)begin
+    31                                               		if(rst==1'b1)begin
+    32              1                         34     			rdata<=`WIDTH'd0;
+    33              1                         34     			ready<=1'b0;
+    34              1                         34     			for(integer i=0;i<`DEPTH;i=i+1)
+    34              2                       8704     
+    35              1                       8704     				mem[i]<=`WIDTH'd0;
+    36                                               		end
+    37                                               
+    38                                               		else begin 
+    39              1                       3148     			rdata<=`WIDTH'd0;
+    40              1                       3148     			ready<=1'b0;
+    41                                               			if(valid==1) begin
+    42              1                       2090     				ready<=1'b1;
+    43              1                       1046     				if(wr_rd==1) mem[addr]<=wdata;
+    44              1                       1044     				else         rdata<=mem[addr];
+    45                                               			end
+    46              1                       1058     			else ready<=1'b0;
+    47                                               			
+    48                                               		end
+    49                                               	end
+    50                                               	
+    51                                               endmodule
+    52                                               
+
+Branch Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Branches                         6         6         0    100.00
+
+================================Branch Details================================
+
+Branch Coverage for file memory.v --
+
+------------------------------------IF Branch------------------------------------
+    31                                      3182     Count coming in to IF
+    31              1                         34     		if(rst==1'b1)begin
+    38              1                       3148     		else begin 
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    41                                      3148     Count coming in to IF
+    41              1                       2090     			if(valid==1) begin
+    46              1                       1058     			else ready<=1'b0;
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    43                                      2090     Count coming in to IF
+    43              1                       1046     				if(wr_rd==1) mem[addr]<=wdata;
+    44              1                       1044     				else         rdata<=mem[addr];
+Branch totals: 2 hits of 2 branches = 100.00%
+
+
+Condition Coverage:
+    Enabled Coverage            Active   Covered    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    FEC Condition Terms              2         2         0    100.00
+
+================================Condition Details================================
+
+Condition Coverage for file memory.v --
+
+----------------Focused Condition View-------------------
+Line       41 Item    1  (valid == 1)
+Condition totals: 1 of 1 input term covered = 100.00%
+
+----------------Focused Condition View-------------------
+Line       43 Item    1  (wr_rd == 1)
+Condition totals: 1 of 1 input term covered = 100.00%
+
+
+Toggle Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Toggle Bins                    154       154         0    100.00
+
+================================Toggle Details================================
+
+Toggle Coverage for File memory.v --
+
+       Line                                   Node      1H->0L      0L->1H  "Coverage"
+--------------------------------------------------------------------------------------
+
+Total Node Count     =         77 
+Toggled Node Count   =         77 
+Untoggled Node Count =          0 
+
+Toggle Coverage      =     100.00% (154 of 154 bins)
+
+
+Total Coverage By File (code coverage only, filtered view): 100.00%
+
