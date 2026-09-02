@@ -2,7 +2,7 @@
 *.js linguist-detectable=false
 *.html linguist-detectable=false
 *.css linguist-detectable=false
-*.do linguist-detectable=false
+#*.do linguist-detectable=false
 
 # Exclude generated simulation/report folders
 sim/** linguist-vendored
